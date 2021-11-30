@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-template_project_name="template-node-typescript"
+template_project_name="ecct-roman-num-calc"
 
 # console echo colors
 #  \033[1;31m red
