@@ -50,16 +50,4 @@ export class CalculatorService implements CalculatorApi {
     }
     return (await axios.get(this.getURL(this.toRomanMethod,output))).data.value;
   }
-
-  async add(operands: string): Promise<string>{
-    return await this.calc("add",operands);
-  }
-
-  async sub(operands: string): Promise<string>{
-    return await this.calc("sub",operands);
-  }
-
-  async mult(operands: string): Promise<string>{
-    return await this.calc("mult",operands);
-  }
 }
