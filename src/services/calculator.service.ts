@@ -2,7 +2,8 @@ import {CalculatorApi} from './calculator.api';
 import {Inject} from 'typescript-ioc';
 import {LoggerApi} from '../logger';
 import axios, { AxiosResponse } from 'axios';
-import { NotImplementedError, BadRequestError } from 'typescript-rest/dist/server/model/errors';
+import { Errors } from 'typescript-rest';
+import { async } from 'q';
 
 export class CalculatorService implements CalculatorApi {
   logger: LoggerApi;
@@ -20,32 +21,39 @@ export class CalculatorService implements CalculatorApi {
     return `${this.baseURL}${method}?value=${value}`
   }
 
-  async toOperandsArray(operands: string): Promise<Array<number>> {
-    const operandArray = operands.split(",");
-    let operandArrayNumeric = new Array<number>(operandArray.length);
-    let response:AxiosResponse<any,any>;
-    for(var i = 0; i < operandArray.length; i++){
-      response = await axios.get(this.getURL(this.toNumberMethod,operandArray[i].trim()));
-      operandArrayNumeric[i] = response.data.value;
-    }
-    return operandArrayNumeric;
+  async getOperandValue(operand: string): Promise<number> {
+    let response = await axios.get(this.getURL(this.toNumberMethod,operand.trim()));
+    return response.data.value;
   }
-
-  async toRoman(num: number): Promise<string> {
-    return (await axios.get(this.getURL(this.toRomanMethod,num))).data.value;
-  }
-
-  async add(operands: string): Promise<string> {
-    this.logger.info(`Adding ${operands}`);
+  
+  async calc(method:string, operands:string): Promise<string> {
+    this.logger.info(`Calling ${method}() with ${operands}`);
     if(operands.trim() === "") {
-      throw new BadRequestError();
+      throw new Errors.BadRequestError();
     }
-    const operandArrayNumeric = await this.toOperandsArray(operands);
-    let sum = 0;
-    operandArrayNumeric.forEach((operand) => sum = sum+operand);
-    if(sum > 3999) {
-      throw new NotImplementedError();
+    const operandArray = operands.split(",");
+    let output = await this.getOperandValue(operandArray[0]);
+    for (const operand of operandArray.slice(1)){
+      switch(method){
+        case "add":
+          output += await this.getOperandValue(operand);
+          break;
+        case "sub":
+          output -= await this.getOperandValue(operand);
+          break;
+      }
+    };
+    if(output > 3999 || output < 0) {
+      throw new Errors.NotImplementedError();
     }
-    return await this.toRoman(sum);
+    return (await axios.get(this.getURL(this.toRomanMethod,output))).data.value;
+  }
+
+  async add(operands: string): Promise<string>{
+    return await this.calc("add",operands);
+  }
+
+  async sub(operands: string): Promise<string>{
+    return await this.calc("sub",operands);
   }
 }
