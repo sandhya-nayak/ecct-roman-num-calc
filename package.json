@@ -30,9 +30,10 @@
     "pact:publish": "ts-node test/pact-publish",
     "sonarqube:scan": "npm run test && ts-node test/sonarqube-scan"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Sandhya Nayak",
+  "license": "Apache-2.0",
   "dependencies": {
+    "axios": "^0.24.0",
     "cls-hooked": "^4.2.2",
     "cors": "^2.8.5",
     "express-pino-logger": "^6.0.0",
