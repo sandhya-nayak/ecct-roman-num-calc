@@ -51,6 +51,7 @@ describe('Calculator service', () =>{
       const operands = "XX";
       mockedAxios.get.mockResolvedValueOnce({data: {value: 20}});
       mockedAxios.get.mockResolvedValueOnce({data: {value: "XX"}});
+
       expect(await service.add(operands)).toEqual("XX");
 
       const calls = mockedAxios.get.mock.calls;
@@ -61,14 +62,24 @@ describe('Calculator service', () =>{
 
     test(`add() should throw Bad Request Error`, async () => {
       const operands = "";
+
       await expect(service.add(operands)).rejects.toThrow(BadRequestError);
+
+      const calls = mockedAxios.get.mock.calls;
+      expect(calls.length).toBe(0);
     });
 
     test(`add(I,MMMCMXCIX) should throw Not Implemented Error`, async () => {
       const operands = "I,MMMCMXCIX";
       mockedAxios.get.mockResolvedValueOnce({data: {value: 1}});
       mockedAxios.get.mockResolvedValueOnce({data: {value: 3999}});
+
       await expect(service.add(operands)).rejects.toThrow(NotImplementedError);
+
+      const calls = mockedAxios.get.mock.calls;
+      expect(calls.length).toBe(2);
+      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'I'));
+      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'MMMCMXCIX'));
     });
 
     test('add(XIIII) should throw Bad Request Error', async () => {
@@ -76,9 +87,10 @@ describe('Calculator service', () =>{
       mockedAxios.get.mockImplementationOnce(() => {
         throw new BadRequestError();
       });
-      await expect(service.add(operands)).rejects.toThrow(BadRequestError);
-      const calls = mockedAxios.get.mock.calls;
 
+      await expect(service.add(operands)).rejects.toThrow(BadRequestError);
+      
+      const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(1);
       expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'XIIII'));
     });
@@ -89,6 +101,7 @@ describe('Calculator service', () =>{
       mockedAxios.get.mockResolvedValueOnce({data: {value: 11}});
       mockedAxios.get.mockResolvedValueOnce({data: {value: 10}});
       mockedAxios.get.mockResolvedValueOnce({data: {value: "XXXIV"}});
+
       expect(await service.add(operands)).toEqual("XXXIV");
 
       const calls = mockedAxios.get.mock.calls;
@@ -128,6 +141,7 @@ describe('Calculator service', () =>{
       const operands = "XX";
       mockedAxios.get.mockResolvedValueOnce({data: {value: 20}});
       mockedAxios.get.mockResolvedValueOnce({data: {value: "XX"}});
+
       expect(await service.sub(operands)).toEqual("XX");
 
       const calls = mockedAxios.get.mock.calls;
@@ -138,14 +152,24 @@ describe('Calculator service', () =>{
 
     test(`sub() should throw Bad Request Error`, async () => {
       const operands = "";
+
       await expect(service.sub(operands)).rejects.toThrow(BadRequestError);
+
+      const calls = mockedAxios.get.mock.calls;
+      expect(calls.length).toBe(0);
     });
 
     test(`sub(I,MMMCMXCIX) should throw Not Implemented Error`, async () => {
       const operands = "I,MMMCMXCIX";
       mockedAxios.get.mockResolvedValueOnce({data: {value: 1}});
       mockedAxios.get.mockResolvedValueOnce({data: {value: 3999}});
+
       await expect(service.sub(operands)).rejects.toThrow(NotImplementedError);
+
+      const calls = mockedAxios.get.mock.calls;
+      expect(calls.length).toBe(2);
+      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'I'));
+      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'MMMCMXCIX'));
     });
 
     test('sub(XIIII) should throw Bad Request Error', async () => {
@@ -153,9 +177,10 @@ describe('Calculator service', () =>{
       mockedAxios.get.mockImplementationOnce(() => {
         throw new BadRequestError();
       });
-      await expect(service.sub(operands)).rejects.toThrow(BadRequestError);
-      const calls = mockedAxios.get.mock.calls;
 
+      await expect(service.sub(operands)).rejects.toThrow(BadRequestError);
+      
+      const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(1);
       expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'XIIII'));
     });
@@ -166,6 +191,7 @@ describe('Calculator service', () =>{
       mockedAxios.get.mockResolvedValueOnce({data: {value: 11}});
       mockedAxios.get.mockResolvedValueOnce({data: {value: 1}});
       mockedAxios.get.mockResolvedValueOnce({data: {value: "I"}});
+
       expect(await service.sub(operands)).toEqual("I");
 
       const calls = mockedAxios.get.mock.calls;
@@ -174,6 +200,94 @@ describe('Calculator service', () =>{
       expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'xI'));
       expect(calls[2][0]).toBe(service.getURL(service.toNumberMethod,'i'));
       expect(calls[3][0]).toBe(service.getURL(service.toRomanMethod,'1'));
+    });
+  });
+
+  describe('Given mult()', () => {
+    test(`mult(I, II, III, IV,V) should calculate the result as 120 and return CXX`, async () => {
+      const operands = "I, II, III, IV,V";
+      mockedAxios.get.mockResolvedValueOnce({data: {value: 1}});
+      mockedAxios.get.mockResolvedValueOnce({data: {value: 2}});
+      mockedAxios.get.mockResolvedValueOnce({data: {value: 3}});
+      mockedAxios.get.mockResolvedValueOnce({data: {value: 4}});
+      mockedAxios.get.mockResolvedValueOnce({data: {value: 5}});
+      mockedAxios.get.mockResolvedValueOnce({data: {value: "CXX"}});
+
+      expect(await service.mult(operands)).toEqual("CXX");
+      
+      const calls = mockedAxios.get.mock.calls;
+      expect(calls.length).toBe(6);
+      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'I'));
+      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'II'));
+      expect(calls[2][0]).toBe(service.getURL(service.toNumberMethod,'III'));
+      expect(calls[3][0]).toBe(service.getURL(service.toNumberMethod,'IV'));
+      expect(calls[4][0]).toBe(service.getURL(service.toNumberMethod,'V'));
+      expect(calls[5][0]).toBe(service.getURL(service.toRomanMethod,'120'));
+    });
+
+    test(`mult(XX) should return XX`, async () => {
+      const operands = "XX";
+      mockedAxios.get.mockResolvedValueOnce({data: {value: 20}});
+      mockedAxios.get.mockResolvedValueOnce({data: {value: "XX"}});
+
+      expect(await service.mult(operands)).toEqual("XX");
+
+      const calls = mockedAxios.get.mock.calls;
+      expect(calls.length).toBe(2);
+      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'XX'));
+      expect(calls[1][0]).toBe(service.getURL(service.toRomanMethod,'20'));
+    });
+
+    test(`mult() should throw Bad Request Error`, async () => {
+      const operands = "";
+
+      await expect(service.mult(operands)).rejects.toThrow(BadRequestError);
+      
+      const calls = mockedAxios.get.mock.calls;
+      expect(calls.length).toBe(0);
+    });
+
+    test(`mult(II,MMMCMXCIX) should throw Not Implemented Error`, async () => {
+      const operands = "II,MMMCMXCIX";
+      mockedAxios.get.mockResolvedValueOnce({data: {value: 2}});
+      mockedAxios.get.mockResolvedValueOnce({data: {value: 3999}});
+
+      await expect(service.mult(operands)).rejects.toThrow(NotImplementedError);
+      
+      const calls = mockedAxios.get.mock.calls;
+      expect(calls.length).toBe(2);
+      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'II'));
+      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'MMMCMXCIX'));
+    });
+
+    test('mult(XIIII) should throw Bad Request Error', async () => {
+      const operands = "XIIII";
+      mockedAxios.get.mockImplementationOnce(() => {
+        throw new BadRequestError();
+      });
+
+      await expect(service.mult(operands)).rejects.toThrow(BadRequestError);
+      
+      const calls = mockedAxios.get.mock.calls;
+      expect(calls.length).toBe(1);
+      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'XIIII'));
+    });
+
+    test('mult(xIii,xI,i) should calculate the result as 143 and return CXLIII', async () => {
+      const operands = "xIii,xI,i";
+      mockedAxios.get.mockResolvedValueOnce({data: {value: 13}});
+      mockedAxios.get.mockResolvedValueOnce({data: {value: 11}});
+      mockedAxios.get.mockResolvedValueOnce({data: {value: 1}});
+      mockedAxios.get.mockResolvedValueOnce({data: {value: "CXLIII"}});
+
+      expect(await service.mult(operands)).toEqual("CXLIII");
+
+      const calls = mockedAxios.get.mock.calls;
+      expect(calls.length).toBe(4);
+      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'xIii'));
+      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'xI'));
+      expect(calls[2][0]).toBe(service.getURL(service.toNumberMethod,'i'));
+      expect(calls[3][0]).toBe(service.getURL(service.toRomanMethod,'143'));
     });
   });
 });

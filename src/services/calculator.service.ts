@@ -25,7 +25,7 @@ export class CalculatorService implements CalculatorApi {
     let response = await axios.get(this.getURL(this.toNumberMethod,operand.trim()));
     return response.data.value;
   }
-  
+
   async calc(method:string, operands:string): Promise<string> {
     this.logger.info(`Calling ${method}() with ${operands}`);
     if(operands.trim() === "") {
@@ -41,6 +41,9 @@ export class CalculatorService implements CalculatorApi {
         case "sub":
           output -= await this.getOperandValue(operand);
           break;
+        case "mult":
+          output *= await this.getOperandValue(operand);
+          break;
       }
     };
     if(output > 3999 || output < 0) {
@@ -55,5 +58,9 @@ export class CalculatorService implements CalculatorApi {
 
   async sub(operands: string): Promise<string>{
     return await this.calc("sub",operands);
+  }
+
+  async mult(operands: string): Promise<string>{
+    return await this.calc("mult",operands);
   }
 }
