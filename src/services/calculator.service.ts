@@ -1,9 +1,8 @@
 import {CalculatorApi} from './calculator.api';
 import {Inject} from 'typescript-ioc';
 import {LoggerApi} from '../logger';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import { Errors } from 'typescript-rest';
-import { async } from 'q';
 
 export class CalculatorService implements CalculatorApi {
   logger: LoggerApi;

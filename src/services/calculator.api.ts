@@ -1,3 +1,3 @@
 export abstract class CalculatorApi {
-  abstract add(operands: string): Promise<string>;
+  abstract calc(method:string, operands:string): Promise<string>;
 }
