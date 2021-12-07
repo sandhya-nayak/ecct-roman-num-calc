@@ -1,23 +1,29 @@
-import {Container} from 'typescript-ioc';
+import {Container, Scope} from 'typescript-ioc';
 
-import {CalculatorService, ConverterService} from '../../src/services';
-import {ApiServer} from '../../src/server';
-import {buildApiServer} from '../helper';
-import axios from 'axios';
+import {CalculatorService, ConverterApi} from '../../src/services';
 import { BadRequestError, NotImplementedError } from 'typescript-rest/dist/server/model/errors';
 
-jest.mock('axios');
-let mockedAxios = axios as jest.Mocked<typeof axios>;
+class MockConverterService implements ConverterApi {
+  toNumber = jest.fn().mockName('toNumber');
+  toRoman = jest.fn().mockName('toRoman');
+  getURL = jest.fn().mockName('getURL');
+  toNumberMethod = "to-number";
+  toRomanMethod = "to-roman";
+}
 
 describe('Calculator service', () =>{
 
-  let app: ApiServer;
   let service: CalculatorService;
+  let mockToNumber: jest.Mock;
+  let mockToRoman: jest.Mock;
 
   beforeAll(() => {
-    app = buildApiServer();
     service = Container.get(CalculatorService);
-    service.converter = Container.get(ConverterService);
+    Container.bind(ConverterApi).scope(Scope.Singleton).to(MockConverterService);
+    service.converter = Container.get(ConverterApi);
+    mockToNumber = service.converter.toNumber as jest.Mock;
+    mockToRoman = service.converter.toRoman as jest.Mock;
+    
   });
 
   afterEach(() => {
@@ -32,86 +38,91 @@ describe('Calculator service', () =>{
     const methodName = "add";
     test(`calc(${methodName},"I, IV, X,XX") should calculate the result as 35 and return XXXV`, async () => {
       const operands = "I, IV, X,XX";
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 1}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 4}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 10}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 20}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: "XXXV"}});
+      const toNumberInputs = operands.split(","), toNumberOutputs = [1,4,10,20], toRomanInput = 35, toRomanOutput = "XXXV";
 
-      expect(await service.calc(methodName,operands)).toEqual("XXXV");
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
+      mockToRoman.mockResolvedValueOnce(toRomanOutput);
       
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(5);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'I'));
-      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'IV'));
-      expect(calls[2][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'X'));
-      expect(calls[3][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XX'));
-      expect(calls[4][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'35'));
+      expect(await service.calc(methodName,operands)).toEqual(toRomanOutput);
+    
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
+      
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(1);
+      expect(toRomanCalls[0][0]).toBe(toRomanInput);
     });
 
     test(`calc(${methodName},"XX") should return XX`, async () => {
       const operands = "XX";
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 20}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: "XX"}});
+      const toNumberInput = operands, toNumberOutput = 20, toRomanInput = 20, toRomanOutput = "XX";
 
-      expect(await service.calc(methodName,operands)).toEqual("XX");
+      mockToNumber.mockResolvedValueOnce(toNumberOutput);
+      mockToRoman.mockResolvedValueOnce(toRomanOutput);
 
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(2);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XX'));
-      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'20'));
+      expect(await service.calc(methodName,operands)).toEqual(toRomanOutput);
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(1);
+      expect(toNumberCalls[0][0]).toBe(toNumberInput);
+
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(1);
+      expect(toRomanCalls[0][0]).toBe(toRomanInput);
     });
 
     test(`calc(${methodName},"") should throw Bad Request Error`, async () => {
       const operands = "";
 
       await expect(service.calc(methodName,operands)).rejects.toThrow(BadRequestError);
-
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(0);
     });
 
     test(`calc(${methodName},"I,MMMCMXCIX") should throw Not Implemented Error`, async () => {
       const operands = "I,MMMCMXCIX";
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 1}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 3999}});
+      const toNumberInputs = operands.split(","), toNumberOutputs = [1,3999];
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
 
       await expect(service.calc(methodName,operands)).rejects.toThrow(NotImplementedError);
 
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(2);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'I'));
-      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'MMMCMXCIX'));
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
     });
 
     test(`calc(${methodName},"XIIII") should throw Bad Request Error`, async () => {
       const operands = "XIIII";
-      mockedAxios.get.mockImplementationOnce(() => {
+      mockToNumber.mockImplementationOnce(() => {
         throw new BadRequestError();
       });
 
       await expect(service.calc(methodName,operands)).rejects.toThrow(BadRequestError);
-      
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(1);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XIIII'));
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(1);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(operands);
     });
 
     test(`calc(${methodName},"xIii,xI,x") should calculate the result as 34 and return XXXIV`, async () => {
       const operands = "xIii,xI,x";
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 13}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 11}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 10}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: "XXXIV"}});
+      const toNumberInputs = operands.split(","), toNumberOutputs = [13,11,10], toRomanInput = 34, toRomanOutput = "XXXIV";
 
-      expect(await service.calc(methodName,operands)).toEqual("XXXIV");
-
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(4);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'xIii'));
-      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'xI'));
-      expect(calls[2][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'x'));
-      expect(calls[3][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'34'));
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
+      mockToRoman.mockResolvedValueOnce(toRomanOutput);
+      
+      expect(await service.calc(methodName,operands)).toEqual(toRomanOutput);
+    
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
+      
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(1);
+      expect(toRomanCalls[0][0]).toBe(toRomanInput);
     });
   });
 
@@ -119,90 +130,91 @@ describe('Calculator service', () =>{
     const methodName = "sub";
     test(`calc(${methodName},"L, III, X, VI, I,IX") should calculate the result as 21 and return XXI`, async () => {
       const operands = "L, III, X, VI, I,IX";
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 50}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 3}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 10}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 6}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 1}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 9}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: "XXI"}});
+      const toNumberInputs = operands.split(","), toNumberOutputs = [50,3,10,6,1,9], toRomanInput = 21, toRomanOutput = "XXI";
 
-      expect(await service.calc(methodName,operands)).toEqual("XXI");
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
+      mockToRoman.mockResolvedValueOnce(toRomanOutput);
       
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(7);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'L'));
-      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'III'));
-      expect(calls[2][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'X'));
-      expect(calls[3][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'VI'));
-      expect(calls[4][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'I'));
-      expect(calls[5][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'IX'));
-      expect(calls[6][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'21'));
+      expect(await service.calc(methodName,operands)).toEqual(toRomanOutput);
+    
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
+      
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(1);
+      expect(toRomanCalls[0][0]).toBe(toRomanInput);
     });
 
     test(`calc(${methodName},"XX") should return XX`, async () => {
       const operands = "XX";
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 20}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: "XX"}});
+      const toNumberInput = operands, toNumberOutput = 20, toRomanInput = 20, toRomanOutput = "XX";
 
-      expect(await service.calc(methodName,operands)).toEqual("XX");
+      mockToNumber.mockResolvedValueOnce(toNumberOutput);
+      mockToRoman.mockResolvedValueOnce(toRomanOutput);
 
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(2);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XX'));
-      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'20'));
+      expect(await service.calc(methodName,operands)).toEqual(toRomanOutput);
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(1);
+      expect(toNumberCalls[0][0]).toBe(toNumberInput);
+
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(1);
+      expect(toRomanCalls[0][0]).toBe(toRomanInput);
     });
 
     test(`calc(${methodName},"") should throw Bad Request Error`, async () => {
       const operands = "";
 
       await expect(service.calc(methodName,operands)).rejects.toThrow(BadRequestError);
-
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(0);
     });
 
     test(`calc(${methodName},"I,MMMCMXCIX") should throw Not Implemented Error`, async () => {
       const operands = "I,MMMCMXCIX";
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 1}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 3999}});
+      const toNumberInputs = operands.split(","), toNumberOutputs = [1,3999];
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
 
       await expect(service.calc(methodName,operands)).rejects.toThrow(NotImplementedError);
 
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(2);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'I'));
-      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'MMMCMXCIX'));
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
     });
 
     test(`calc(${methodName},"XIIII") should throw Bad Request Error`, async () => {
       const operands = "XIIII";
-      mockedAxios.get.mockImplementationOnce(() => {
+      mockToNumber.mockImplementationOnce(() => {
         throw new BadRequestError();
       });
 
       await expect(service.calc(methodName,operands)).rejects.toThrow(BadRequestError);
-      
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(1);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XIIII'));
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(1);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(operands);
     });
 
     test(`calc(${methodName},"xIii,xI,i") should calculate the result as 1 and return I`, async () => {
       const operands = "xIii,xI,i";
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 13}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 11}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 1}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: "I"}});
+      const toNumberInputs = operands.split(","), toNumberOutputs = [13,11,1], toRomanInput = 1, toRomanOutput = "I";
 
-      expect(await service.calc(methodName,operands)).toEqual("I");
-
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(4);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'xIii'));
-      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'xI'));
-      expect(calls[2][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'i'));
-      expect(calls[3][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'1'));
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
+      mockToRoman.mockResolvedValueOnce(toRomanOutput);
+      
+      expect(await service.calc(methodName,operands)).toEqual(toRomanOutput);
+    
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
+      
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(1);
+      expect(toRomanCalls[0][0]).toBe(toRomanInput);
     });
   });
 
@@ -210,88 +222,90 @@ describe('Calculator service', () =>{
     const methodName = "mult";
     test(`calc(${methodName},"I, II, III, IV,V") should calculate the result as 120 and return CXX`, async () => {
       const operands = "I, II, III, IV,V";
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 1}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 2}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 3}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 4}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 5}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: "CXX"}});
+      const toNumberInputs = operands.split(","), toNumberOutputs = [1,2,3,4,5], toRomanInput = 120, toRomanOutput = "CXX";
 
-      expect(await service.calc(methodName,operands)).toEqual("CXX");
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
+      mockToRoman.mockResolvedValueOnce(toRomanOutput);
       
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(6);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'I'));
-      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'II'));
-      expect(calls[2][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'III'));
-      expect(calls[3][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'IV'));
-      expect(calls[4][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'V'));
-      expect(calls[5][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'120'));
+      expect(await service.calc(methodName,operands)).toEqual(toRomanOutput);
+    
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
+      
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(1);
+      expect(toRomanCalls[0][0]).toBe(toRomanInput);
     });
 
     test(`calc(${methodName},"XX") should return XX`, async () => {
       const operands = "XX";
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 20}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: "XX"}});
+      const toNumberInput = operands, toNumberOutput = 20, toRomanInput = 20, toRomanOutput = "XX";
 
-      expect(await service.calc(methodName,operands)).toEqual("XX");
+      mockToNumber.mockResolvedValueOnce(toNumberOutput);
+      mockToRoman.mockResolvedValueOnce(toRomanOutput);
 
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(2);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XX'));
-      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'20'));
+      expect(await service.calc(methodName,operands)).toEqual(toRomanOutput);
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(1);
+      expect(toNumberCalls[0][0]).toBe(toNumberInput);
+
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(1);
+      expect(toRomanCalls[0][0]).toBe(toRomanInput);
     });
 
     test(`calc(${methodName},"") should throw Bad Request Error`, async () => {
       const operands = "";
-
       await expect(service.calc(methodName,operands)).rejects.toThrow(BadRequestError);
-      
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(0);
     });
 
     test(`calc(${methodName},"II,MMMCMXCIX") should throw Not Implemented Error`, async () => {
       const operands = "II,MMMCMXCIX";
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 2}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 3999}});
+      const toNumberInputs = operands.split(","), toNumberOutputs = [2,3999];
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
 
       await expect(service.calc(methodName,operands)).rejects.toThrow(NotImplementedError);
-      
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(2);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'II'));
-      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'MMMCMXCIX'));
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
     });
 
     test(`calc(${methodName},"XIIII") should throw Bad Request Error`, async () => {
       const operands = "XIIII";
-      mockedAxios.get.mockImplementationOnce(() => {
+      mockToNumber.mockImplementationOnce(() => {
         throw new BadRequestError();
       });
 
       await expect(service.calc(methodName,operands)).rejects.toThrow(BadRequestError);
-      
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(1);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XIIII'));
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(1);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(operands);
     });
 
     test(`calc(${methodName},"xIii,xI,i") should calculate the result as 143 and return CXLIII`, async () => {
       const operands = "xIii,xI,i";
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 13}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 11}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: 1}});
-      mockedAxios.get.mockResolvedValueOnce({data: {value: "CXLIII"}});
+      const toNumberInputs = operands.split(","), toNumberOutputs = [13,11,1], toRomanInput = 143, toRomanOutput = "CXLIII";
 
-      expect(await service.calc(methodName,operands)).toEqual("CXLIII");
-
-      const calls = mockedAxios.get.mock.calls;
-      expect(calls.length).toBe(4);
-      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'xIii'));
-      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'xI'));
-      expect(calls[2][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'i'));
-      expect(calls[3][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'143'));
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
+      mockToRoman.mockResolvedValueOnce(toRomanOutput);
+      
+      expect(await service.calc(methodName,operands)).toEqual(toRomanOutput);
+    
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
+      
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(1);
+      expect(toRomanCalls[0][0]).toBe(toRomanInput);
     });
   });
 });

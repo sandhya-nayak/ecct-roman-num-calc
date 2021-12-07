@@ -1,7 +1,6 @@
 import {Application} from 'express';
 import {default as request} from 'supertest';
 import {Container, Scope} from 'typescript-ioc';
-
 import {CalculatorApi} from '../../src/services';
 import {buildApiServer} from '../helper';
 
@@ -42,7 +41,7 @@ describe('calculator.controller', () => {
         jest.clearAllMocks();
       });
 
-      test(`add(${input}) should return correct calculated value ${output}`, async() => {
+      test(`add(${input}) should make a call to calc with add and ${input}, and return correct calculated value ${output}`, async() => {
         await request(app)
             .get('/add/')
             .query({operands: input})
@@ -69,7 +68,7 @@ describe('calculator.controller', () => {
         jest.clearAllMocks();
       });
 
-      test(`sub(${input}) should return correct calculated value ${output}`, async() => {
+      test(`sub(${input}) should make a call to calc with sub and ${input}, and return correct calculated value ${output}`, async() => {
         await request(app)
             .get('/sub/')
             .query({operands: input})
@@ -96,7 +95,7 @@ describe('calculator.controller', () => {
         jest.clearAllMocks();
       });
 
-      test(`mult(${input}) should return correct calculated value ${output}`, async() => {
+      test(`mult(${input}) should make a call to calc with mult and ${input}, and return correct calculated value ${output}`, async() => {
         await request(app)
             .get('/mult/')
             .query({operands: input})

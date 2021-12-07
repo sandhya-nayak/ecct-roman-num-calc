@@ -19,7 +19,7 @@ export class ConverterService implements ConverterApi {
   async toNumber(value: string): Promise<number> {
     try {
       const response:AxiosResponse = await axios.get(this.getURL(this.toNumberMethod,value.trim()));
-      return response.data.value;
+      return response.data;
     }
     catch(error){
       const err = {...error};
@@ -31,7 +31,7 @@ export class ConverterService implements ConverterApi {
   async toRoman(value: number): Promise<string> {
     try{
       const response:AxiosResponse = await axios.get(this.getURL(this.toRomanMethod,value));
-      return response.data.value;
+      return response.data;
     }
     catch(error){
       const err = {...error};

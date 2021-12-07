@@ -17,25 +17,25 @@ export class CalculatorController {
 
   @Path('/add')
   @GET
-  async add(@QueryParam('operands') operands:string): Promise<object> {
+  async add(@QueryParam('operands') operands:string): Promise<string> {
     this.logger.info(`Adding ${operands}`);
     const resp = await this.service.calc("add",operands);
-    return {value: resp};
+    return resp;
   }
 
   @Path('/sub')
   @GET
-  async sub(@QueryParam('operands') operands:string): Promise<object> {
+  async sub(@QueryParam('operands') operands:string): Promise<string> {
     this.logger.info(`Subtracting ${operands}`);
     const resp = await this.service.calc("sub",operands);
-    return {value: resp};
+    return resp;
   }
 
   @Path('/mult')
   @GET
-  async mult(@QueryParam('operands') operands:string): Promise<object> {
+  async mult(@QueryParam('operands') operands:string): Promise<string> {
     this.logger.info(`Multiplying ${operands}`);
     const resp = await this.service.calc("mult",operands);
-    return {value: resp};
+    return resp;
   }
 }
