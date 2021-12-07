@@ -1,6 +1,6 @@
 import {Container} from 'typescript-ioc';
 
-import {CalculatorService} from '../../src/services';
+import {CalculatorService, ConverterService} from '../../src/services';
 import {ApiServer} from '../../src/server';
 import {buildApiServer} from '../helper';
 import axios from 'axios';
@@ -17,6 +17,7 @@ describe('Calculator service', () =>{
   beforeAll(() => {
     app = buildApiServer();
     service = Container.get(CalculatorService);
+    service.converter = Container.get(ConverterService);
   });
 
   afterEach(() => {
@@ -41,11 +42,11 @@ describe('Calculator service', () =>{
       
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(5);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'I'));
-      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'IV'));
-      expect(calls[2][0]).toBe(service.getURL(service.toNumberMethod,'X'));
-      expect(calls[3][0]).toBe(service.getURL(service.toNumberMethod,'XX'));
-      expect(calls[4][0]).toBe(service.getURL(service.toRomanMethod,'35'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'I'));
+      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'IV'));
+      expect(calls[2][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'X'));
+      expect(calls[3][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XX'));
+      expect(calls[4][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'35'));
     });
 
     test(`calc(${methodName},"XX") should return XX`, async () => {
@@ -57,8 +58,8 @@ describe('Calculator service', () =>{
 
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(2);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'XX'));
-      expect(calls[1][0]).toBe(service.getURL(service.toRomanMethod,'20'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XX'));
+      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'20'));
     });
 
     test(`calc(${methodName},"") should throw Bad Request Error`, async () => {
@@ -79,8 +80,8 @@ describe('Calculator service', () =>{
 
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(2);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'I'));
-      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'MMMCMXCIX'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'I'));
+      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'MMMCMXCIX'));
     });
 
     test(`calc(${methodName},"XIIII") should throw Bad Request Error`, async () => {
@@ -93,7 +94,7 @@ describe('Calculator service', () =>{
       
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(1);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'XIIII'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XIIII'));
     });
 
     test(`calc(${methodName},"xIii,xI,x") should calculate the result as 34 and return XXXIV`, async () => {
@@ -107,10 +108,10 @@ describe('Calculator service', () =>{
 
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(4);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'xIii'));
-      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'xI'));
-      expect(calls[2][0]).toBe(service.getURL(service.toNumberMethod,'x'));
-      expect(calls[3][0]).toBe(service.getURL(service.toRomanMethod,'34'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'xIii'));
+      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'xI'));
+      expect(calls[2][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'x'));
+      expect(calls[3][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'34'));
     });
   });
 
@@ -130,13 +131,13 @@ describe('Calculator service', () =>{
       
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(7);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'L'));
-      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'III'));
-      expect(calls[2][0]).toBe(service.getURL(service.toNumberMethod,'X'));
-      expect(calls[3][0]).toBe(service.getURL(service.toNumberMethod,'VI'));
-      expect(calls[4][0]).toBe(service.getURL(service.toNumberMethod,'I'));
-      expect(calls[5][0]).toBe(service.getURL(service.toNumberMethod,'IX'));
-      expect(calls[6][0]).toBe(service.getURL(service.toRomanMethod,'21'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'L'));
+      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'III'));
+      expect(calls[2][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'X'));
+      expect(calls[3][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'VI'));
+      expect(calls[4][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'I'));
+      expect(calls[5][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'IX'));
+      expect(calls[6][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'21'));
     });
 
     test(`calc(${methodName},"XX") should return XX`, async () => {
@@ -148,8 +149,8 @@ describe('Calculator service', () =>{
 
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(2);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'XX'));
-      expect(calls[1][0]).toBe(service.getURL(service.toRomanMethod,'20'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XX'));
+      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'20'));
     });
 
     test(`calc(${methodName},"") should throw Bad Request Error`, async () => {
@@ -170,8 +171,8 @@ describe('Calculator service', () =>{
 
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(2);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'I'));
-      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'MMMCMXCIX'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'I'));
+      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'MMMCMXCIX'));
     });
 
     test(`calc(${methodName},"XIIII") should throw Bad Request Error`, async () => {
@@ -184,7 +185,7 @@ describe('Calculator service', () =>{
       
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(1);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'XIIII'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XIIII'));
     });
 
     test(`calc(${methodName},"xIii,xI,i") should calculate the result as 1 and return I`, async () => {
@@ -198,10 +199,10 @@ describe('Calculator service', () =>{
 
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(4);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'xIii'));
-      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'xI'));
-      expect(calls[2][0]).toBe(service.getURL(service.toNumberMethod,'i'));
-      expect(calls[3][0]).toBe(service.getURL(service.toRomanMethod,'1'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'xIii'));
+      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'xI'));
+      expect(calls[2][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'i'));
+      expect(calls[3][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'1'));
     });
   });
 
@@ -220,12 +221,12 @@ describe('Calculator service', () =>{
       
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(6);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'I'));
-      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'II'));
-      expect(calls[2][0]).toBe(service.getURL(service.toNumberMethod,'III'));
-      expect(calls[3][0]).toBe(service.getURL(service.toNumberMethod,'IV'));
-      expect(calls[4][0]).toBe(service.getURL(service.toNumberMethod,'V'));
-      expect(calls[5][0]).toBe(service.getURL(service.toRomanMethod,'120'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'I'));
+      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'II'));
+      expect(calls[2][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'III'));
+      expect(calls[3][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'IV'));
+      expect(calls[4][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'V'));
+      expect(calls[5][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'120'));
     });
 
     test(`calc(${methodName},"XX") should return XX`, async () => {
@@ -237,8 +238,8 @@ describe('Calculator service', () =>{
 
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(2);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'XX'));
-      expect(calls[1][0]).toBe(service.getURL(service.toRomanMethod,'20'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XX'));
+      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'20'));
     });
 
     test(`calc(${methodName},"") should throw Bad Request Error`, async () => {
@@ -259,8 +260,8 @@ describe('Calculator service', () =>{
       
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(2);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'II'));
-      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'MMMCMXCIX'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'II'));
+      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'MMMCMXCIX'));
     });
 
     test(`calc(${methodName},"XIIII") should throw Bad Request Error`, async () => {
@@ -273,7 +274,7 @@ describe('Calculator service', () =>{
       
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(1);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'XIIII'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'XIIII'));
     });
 
     test(`calc(${methodName},"xIii,xI,i") should calculate the result as 143 and return CXLIII`, async () => {
@@ -287,10 +288,10 @@ describe('Calculator service', () =>{
 
       const calls = mockedAxios.get.mock.calls;
       expect(calls.length).toBe(4);
-      expect(calls[0][0]).toBe(service.getURL(service.toNumberMethod,'xIii'));
-      expect(calls[1][0]).toBe(service.getURL(service.toNumberMethod,'xI'));
-      expect(calls[2][0]).toBe(service.getURL(service.toNumberMethod,'i'));
-      expect(calls[3][0]).toBe(service.getURL(service.toRomanMethod,'143'));
+      expect(calls[0][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'xIii'));
+      expect(calls[1][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'xI'));
+      expect(calls[2][0]).toBe(service.converter.getURL(service.converter.toNumberMethod,'i'));
+      expect(calls[3][0]).toBe(service.converter.getURL(service.converter.toRomanMethod,'143'));
     });
   });
 });

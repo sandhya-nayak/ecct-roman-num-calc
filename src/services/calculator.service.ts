@@ -1,28 +1,18 @@
 import {CalculatorApi} from './calculator.api';
+import {ConverterApi} from './converter.api';
 import {Inject} from 'typescript-ioc';
 import {LoggerApi} from '../logger';
-import axios from 'axios';
-import { Errors } from 'typescript-rest';
+import {Errors} from 'typescript-rest';
 
 export class CalculatorService implements CalculatorApi {
+  converter: ConverterApi;
   logger: LoggerApi;
-  baseURL = "https://ecct-roman-num-conv-snyk-roman-num-conv.eco-training-f2c6cdc6801be85fd188b09d006f13e3-0000.us-east.containers.appdomain.cloud/";
-  toNumberMethod="to-number";
-  toRomanMethod="to-roman";
+  
   constructor(
     @Inject
     logger: LoggerApi,
   ) {
     this.logger = logger.child('CalculatorService');
-  }
-
-  getURL(method:string,value:string|number){
-    return `${this.baseURL}${method}?value=${value}`
-  }
-
-  async getOperandValue(operand: string): Promise<number> {
-    let response = await axios.get(this.getURL(this.toNumberMethod,operand.trim()));
-    return response.data.value;
   }
 
   async calc(method:string, operands:string): Promise<string> {
@@ -31,23 +21,23 @@ export class CalculatorService implements CalculatorApi {
       throw new Errors.BadRequestError();
     }
     const operandArray = operands.split(",");
-    let output = await this.getOperandValue(operandArray[0]);
+    let output = await this.converter.toNumber(operandArray[0]);
     for (const operand of operandArray.slice(1)){
       switch(method){
         case "add":
-          output += await this.getOperandValue(operand);
+          output += await this.converter.toNumber(operand);
           break;
         case "sub":
-          output -= await this.getOperandValue(operand);
+          output -= await this.converter.toNumber(operand);
           break;
         case "mult":
-          output *= await this.getOperandValue(operand);
+          output *= await this.converter.toNumber(operand);
           break;
       }
     };
     if(output > 3999 || output < 0) {
       throw new Errors.NotImplementedError();
     }
-    return (await axios.get(this.getURL(this.toRomanMethod,output))).data.value;
+    return (await this.converter.toRoman(output));
   }
 }
