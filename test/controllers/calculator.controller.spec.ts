@@ -43,7 +43,7 @@ describe('calculator.controller', () => {
 
       test(`add(${input}) should make a call to calc with add and ${input}, and return correct calculated value ${output}`, async() => {
         await request(app)
-            .get('/add/')
+            .get('/add')
             .query({operands: input})
             .expect(200);
         
@@ -70,7 +70,7 @@ describe('calculator.controller', () => {
 
       test(`sub(${input}) should make a call to calc with sub and ${input}, and return correct calculated value ${output}`, async() => {
         await request(app)
-            .get('/sub/')
+            .get('/sub')
             .query({operands: input})
             .expect(200);
         
@@ -97,7 +97,7 @@ describe('calculator.controller', () => {
 
       test(`mult(${input}) should make a call to calc with mult and ${input}, and return correct calculated value ${output}`, async() => {
         await request(app)
-            .get('/mult/')
+            .get('/mult')
             .query({operands: input})
             .expect(200);
         
