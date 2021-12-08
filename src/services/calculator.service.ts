@@ -11,8 +11,11 @@ export class CalculatorService implements CalculatorApi {
   constructor(
     @Inject
     logger: LoggerApi,
+    @Inject
+    converter: ConverterApi,
   ) {
     this.logger = logger.child('CalculatorService');
+    this.converter = converter;
   }
 
   async calc(method:string, operands:string): Promise<string> {
