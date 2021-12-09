@@ -25,6 +25,7 @@ export class CalculatorService implements CalculatorApi {
     }
     const operandArray = operands.split(",");
     let output = await this.converter.toNumber(operandArray[0]);
+    let divisor = 1, remainder = 0;
     for (const operand of operandArray.slice(1)){
       switch(method){
         case "add":
@@ -36,11 +37,21 @@ export class CalculatorService implements CalculatorApi {
         case "mult":
           output *= await this.converter.toNumber(operand);
           break;
+        case "div":
+          divisor *= await this.converter.toNumber(operand);
+          break;
       }
     };
+    if(method == "div") {
+      const gcd = (x: number, y: number) => (!y ? x : gcd(y, x % y));
+      const gcdVal = gcd(output,divisor);
+      divisor = divisor/gcdVal;
+      remainder = output%divisor;
+      output = Math.round(output/(gcdVal*divisor));
+    }
     if(output > 3999 || output < 0) {
       throw new Errors.NotImplementedError();
     }
-    return (await this.converter.toRoman(output));
+    return (await this.converter.toRoman(output) + ((remainder == 0)?"":(" ("+await this.converter.toRoman(remainder)+"/"+await this.converter.toRoman(divisor)+")")));
   }
 }

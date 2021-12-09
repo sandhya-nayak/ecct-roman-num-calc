@@ -108,4 +108,31 @@ describe('calculator.controller', () => {
       });
     });
   });
+
+  describe('Given /div', () => {
+    describe('When checking for valid input', () => {
+      const input = 'LX,III,II';
+      const output = 'X';
+
+      beforeEach(() => {
+        mockCalc.mockResolvedValueOnce(output);
+      });
+
+      afterEach(() => {
+        jest.clearAllMocks();
+      });
+
+      test(`div(${input}) should make a call to calc with div and ${input}, and return correct calculated value ${output}`, async() => {
+        await request(app)
+            .get('/div')
+            .query({operands: input})
+            .expect(200);
+        
+        const calls = mockCalc.mock.calls;
+        expect(calls.length).toBe(1);
+        expect(calls[0][0]).toMatch("div");
+        expect(calls[0][1]).toBe(input);
+      });
+    });
+  });
 });

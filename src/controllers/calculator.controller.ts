@@ -38,4 +38,12 @@ export class CalculatorController {
     const resp = await this.service.calc("mult",operands);
     return resp;
   }
+
+  @Path('/div')
+  @GET
+  async div(@QueryParam('operands') operands:string): Promise<string> {
+    this.logger.info(`Dividing ${operands}`);
+    const resp = await this.service.calc("div",operands);
+    return resp;
+  }
 }
