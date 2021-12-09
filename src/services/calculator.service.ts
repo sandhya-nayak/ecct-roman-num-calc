@@ -18,40 +18,37 @@ export class CalculatorService implements CalculatorApi {
     this.converter = converter;
   }
 
+  reducers = {
+    add: (a:number, b:number) => a + b,
+    sub: (a:number, b:number) => a - b,
+    mult: (a:number, b:number) => a * b
+  }
+
+  gcd = (x: number, y: number) => (!y ? x : this.gcd(y, x % y));
+
   async calc(method:string, operands:string): Promise<string> {
     this.logger.info(`Calling ${method}() with ${operands}`);
-    if(operands.trim() === "") {
-      throw new Errors.BadRequestError();
-    }
-    const operandArray = operands.split(",");
-    let output = await this.converter.toNumber(operandArray[0]);
-    let divisor = 1, remainder = 0;
-    for (const operand of operandArray.slice(1)){
-      switch(method){
-        case "add":
-          output += await this.converter.toNumber(operand);
-          break;
-        case "sub":
-          output -= await this.converter.toNumber(operand);
-          break;
-        case "mult":
-          output *= await this.converter.toNumber(operand);
-          break;
-        case "div":
-          divisor *= await this.converter.toNumber(operand);
-          break;
+
+    if(operands.trim() === "") throw new Errors.BadRequestError();
+    
+    const operandArray = await Promise.all(operands.split(",").map(async(operand) => await this.converter.toNumber(operand)));
+    
+    let result = 0, divisor = 1, remainder = 0;
+    
+    if(method == "div"){
+      result = operandArray[0];
+      if(operandArray.length > 1){
+        divisor = operandArray.slice(1).reduce(this.reducers["mult"]);
+        const gcdVal = this.gcd(result,divisor);
+        divisor = divisor/gcdVal;
+        remainder = result%divisor;
+        result = Math.round(result/(gcdVal*divisor));
       }
-    };
-    if(method == "div") {
-      const gcd = (x: number, y: number) => (!y ? x : gcd(y, x % y));
-      const gcdVal = gcd(output,divisor);
-      divisor = divisor/gcdVal;
-      remainder = output%divisor;
-      output = Math.round(output/(gcdVal*divisor));
     }
-    if(output > 3999 || output < 0) {
-      throw new Errors.NotImplementedError();
-    }
-    return (await this.converter.toRoman(output) + ((remainder == 0)?"":(" ("+await this.converter.toRoman(remainder)+"/"+await this.converter.toRoman(divisor)+")")));
+    else result = operandArray.reduce(this.reducers[method]);
+    
+    if(result > 3999 || result < 0) throw new Errors.NotImplementedError();
+    
+    return (await this.converter.toRoman(result) + (!remainder?"":(" ("+await this.converter.toRoman(remainder)+"/"+await this.converter.toRoman(divisor)+")")));
   }
 }
