@@ -550,5 +550,19 @@ describe('Calculator service', () =>{
       
       expect(receivedOutput).toEqual(output);
     });
+
+    test(`calc(${methodName},"XX, nulla") should throw Not Implemented Error`, async () => {
+      const operands = "XX, nulla";
+      const toNumberInputs = operands.split(","), toNumberOutputs = [20, 0];
+
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
+      
+      await expect(service.calc(methodName,operands)).rejects.toThrow(NotImplementedError);
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
+    });
   });
 });

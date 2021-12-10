@@ -1,4 +1,4 @@
-import {Path, GET, QueryParam} from 'typescript-rest';
+import {Path, GET, QueryParam, Errors} from 'typescript-rest';
 import {Inject} from 'typescript-ioc';
 import {CalculatorApi} from '../services';
 import {LoggerApi} from '../logger';
@@ -19,31 +19,63 @@ export class CalculatorController {
   @GET
   async add(@QueryParam('operands') operands:string): Promise<string> {
     this.logger.info(`Adding ${operands}`);
-    const resp = await this.service.calc("add",operands);
-    return resp;
+    try{
+      const resp = await this.service.calc("add",operands);
+      return resp;
+    }
+    catch(error){
+      const err = {...error};
+      if (err.statusCode === 400) throw new Errors.BadRequestError();
+      if (err.statusCode === 501) throw new Errors.NotImplementedError();
+      throw new Errors.InternalServerError();
+    }
   }
 
   @Path('/sub')
   @GET
   async sub(@QueryParam('operands') operands:string): Promise<string> {
     this.logger.info(`Subtracting ${operands}`);
-    const resp = await this.service.calc("sub",operands);
-    return resp;
+    try{
+        const resp = await this.service.calc("sub",operands);
+      return resp;
+    }
+    catch(error){
+      const err = {...error};
+      if (err.statusCode === 400) throw new Errors.BadRequestError();
+      if (err.statusCode === 501) throw new Errors.NotImplementedError();
+      throw new Errors.InternalServerError();
+    }
   }
 
   @Path('/mult')
   @GET
   async mult(@QueryParam('operands') operands:string): Promise<string> {
     this.logger.info(`Multiplying ${operands}`);
-    const resp = await this.service.calc("mult",operands);
-    return resp;
+    try{
+      const resp = await this.service.calc("mult",operands);
+      return resp;
+    }
+    catch(error){
+      const err = {...error};
+      if (err.statusCode === 400) throw new Errors.BadRequestError();
+      if (err.statusCode === 501) throw new Errors.NotImplementedError();
+      throw new Errors.InternalServerError();
+    }
   }
 
   @Path('/div')
   @GET
   async div(@QueryParam('operands') operands:string): Promise<string> {
     this.logger.info(`Dividing ${operands}`);
-    const resp = await this.service.calc("div",operands);
-    return resp;
+    try{
+      const resp = await this.service.calc("div",operands);
+      return resp;
+    }
+    catch(error){
+      const err = {...error};
+      if (err.statusCode === 400) throw new Errors.BadRequestError();
+      if (err.statusCode === 501) throw new Errors.NotImplementedError();
+      throw new Errors.InternalServerError();
+    }
   }
 }
