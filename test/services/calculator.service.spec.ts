@@ -419,9 +419,119 @@ describe('Calculator service', () =>{
         expect(toNumberCalls[i][0]).toBe(operands);
     });
 
-    test(`calc(${methodName},"xIi,V,II") should return I (II/V)`, async () => {
+    test(`calc(${methodName},"xIi,V,II") should return I (I/V)`, async () => {
       const operands = "xIi,V,II";
-      const toNumberInputs = operands.split(","), toNumberOutputs = [12,5,2], toRomanInputs = [1,2,5], toRomanOutputs = ["I", "II", "V"], output = "I (II/V)";
+      const toNumberInputs = operands.split(","), toNumberOutputs = [12,5,2], toRomanInputs = [1,1,5], toRomanOutputs = ["I", "I", "V"], output = "I (I/V)";
+
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
+      toRomanOutputs.forEach(numOutput => mockToRoman.mockResolvedValueOnce(numOutput));
+      
+      const receivedOutput = await service.calc(methodName,operands);
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
+      
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(toRomanInputs.length);
+      for(let i=0; i<toRomanCalls.length; i++)
+        expect(toRomanCalls[i][0]).toBe(toRomanInputs[i]);
+      
+      expect(receivedOutput).toEqual(output);
+    });
+
+    test(`calc(${methodName},"X, IV") should return II (I/II)`, async () => {
+      const operands = "X, IV";
+      const toNumberInputs = operands.split(","), toNumberOutputs = [10,4], toRomanInputs = [2,1,2], toRomanOutputs = ["II", "I", "II"], output = "II (I/II)";
+
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
+      toRomanOutputs.forEach(numOutput => mockToRoman.mockResolvedValueOnce(numOutput));
+      
+      const receivedOutput = await service.calc(methodName,operands);
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
+      
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(toRomanInputs.length);
+      for(let i=0; i<toRomanCalls.length; i++)
+        expect(toRomanCalls[i][0]).toBe(toRomanInputs[i]);
+      
+      expect(receivedOutput).toEqual(output);
+    });
+
+    test(`calc(${methodName},"XI, IV") should return II (III/IV)`, async () => {
+      const operands = "XI, IV";
+      const toNumberInputs = operands.split(","), toNumberOutputs = [11,4], toRomanInputs = [2,3,4], toRomanOutputs = ["II", "III", "IV"], output = "II (III/IV)";
+
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
+      toRomanOutputs.forEach(numOutput => mockToRoman.mockResolvedValueOnce(numOutput));
+      
+      const receivedOutput = await service.calc(methodName,operands);
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
+      
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(toRomanInputs.length);
+      for(let i=0; i<toRomanCalls.length; i++)
+        expect(toRomanCalls[i][0]).toBe(toRomanInputs[i]);
+      
+      expect(receivedOutput).toEqual(output);
+    });
+
+    test(`calc(${methodName},"XX, II, III") should return III (I/III)`, async () => {
+      const operands = "XX, II, III";
+      const toNumberInputs = operands.split(","), toNumberOutputs = [20,2,3], toRomanInputs = [3,1,3], toRomanOutputs = ["III", "I", "III"], output = "III (I/III)";
+
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
+      toRomanOutputs.forEach(numOutput => mockToRoman.mockResolvedValueOnce(numOutput));
+      
+      const receivedOutput = await service.calc(methodName,operands);
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
+      
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(toRomanInputs.length);
+      for(let i=0; i<toRomanCalls.length; i++)
+        expect(toRomanCalls[i][0]).toBe(toRomanInputs[i]);
+      
+      expect(receivedOutput).toEqual(output);
+    });
+
+    test(`calc(${methodName},"XIX, III, II") should return III (I/VI)`, async () => {
+      const operands = "XIX, III, II";
+      const toNumberInputs = operands.split(","), toNumberOutputs = [19,3,2], toRomanInputs = [3,1,6], toRomanOutputs = ["III", "I", "VI"], output = "III (I/VI)";
+
+      toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
+      toRomanOutputs.forEach(numOutput => mockToRoman.mockResolvedValueOnce(numOutput));
+      
+      const receivedOutput = await service.calc(methodName,operands);
+
+      const toNumberCalls = mockToNumber.mock.calls;
+      expect(toNumberCalls.length).toBe(toNumberInputs.length);
+      for(let i=0; i<toNumberCalls.length; i++)
+        expect(toNumberCalls[i][0]).toBe(toNumberInputs[i]);
+      
+      const toRomanCalls = mockToRoman.mock.calls;
+      expect(toRomanCalls.length).toBe(toRomanInputs.length);
+      for(let i=0; i<toRomanCalls.length; i++)
+        expect(toRomanCalls[i][0]).toBe(toRomanInputs[i]);
+      
+      expect(receivedOutput).toEqual(output);
+    });
+
+    test(`calc(${methodName},"XX, III, II") should return III (I/III)`, async () => {
+      const operands = "XX, III, II";
+      const toNumberInputs = operands.split(","), toNumberOutputs = [20,3,2], toRomanInputs = [3,1,3], toRomanOutputs = ["III", "I", "III"], output = "III (I/III)";
 
       toNumberOutputs.forEach(numOutput => mockToNumber.mockResolvedValueOnce(numOutput));
       toRomanOutputs.forEach(numOutput => mockToRoman.mockResolvedValueOnce(numOutput));

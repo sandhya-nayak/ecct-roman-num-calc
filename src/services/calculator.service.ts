@@ -39,10 +39,11 @@ export class CalculatorService implements CalculatorApi {
       result = operandArray[0];
       if(operandArray.length > 1){
         divisor = operandArray.slice(1).reduce(this.reducers["mult"]);
-        const gcdVal = this.gcd(result,divisor);
-        divisor = divisor/gcdVal;
         remainder = result%divisor;
-        result = Math.round(result/(gcdVal*divisor));
+        result = Math.floor(result/divisor);
+        const gcdVal = this.gcd(remainder,divisor);
+        divisor /= gcdVal;
+        remainder /=  gcdVal;
       }
     }
     else result = operandArray.reduce(this.reducers[method]);
