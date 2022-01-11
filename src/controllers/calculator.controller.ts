@@ -36,7 +36,7 @@ export class CalculatorController {
   async sub(@QueryParam('operands') operands:string): Promise<string> {
     this.logger.info(`Subtracting ${operands}`);
     try{
-        const resp = await this.service.calc("sub",operands);
+      const resp = await this.service.calc("sub",operands);
       return resp;
     }
     catch(error){
