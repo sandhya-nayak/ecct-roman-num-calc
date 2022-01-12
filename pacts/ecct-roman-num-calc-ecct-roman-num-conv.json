@@ -1,0 +1,60 @@
+{
+  "consumer": {
+    "name": "ecct-roman-num-calc"
+  },
+  "provider": {
+    "name": "ecct-roman-num-conv"
+  },
+  "interactions": [
+    {
+      "description": "a /to-roman call with value=0",
+      "providerState": "a request is made",
+      "request": {
+        "method": "GET",
+        "path": "/to-roman",
+        "query": "value=0"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": "nulla"
+      }
+    },
+    {
+      "description": "a /to-roman call with value=579",
+      "providerState": "a request is made",
+      "request": {
+        "method": "GET",
+        "path": "/to-roman",
+        "query": "value=579"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": "DLXXIX"
+      }
+    },
+    {
+      "description": "a /to-roman call with value=3999",
+      "providerState": "a request is made",
+      "request": {
+        "method": "GET",
+        "path": "/to-roman",
+        "query": "value=3999"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": "MMMCMXCIX"
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}
