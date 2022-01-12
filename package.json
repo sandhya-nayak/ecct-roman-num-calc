@@ -9,7 +9,7 @@
     "host": "localhost",
     "port": 3000,
     "contextRoot": "",
-    "baseConverterUrl": "http://ecct-roman-num-conv:80"
+    "baseConverterUrl": "http://localhost:3001"
   },
   "pact": {
     "providerBaseUrl": "",

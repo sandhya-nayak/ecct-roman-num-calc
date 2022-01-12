@@ -44,6 +44,11 @@ base:
           fieldPath: metadata.name
     - name: LOG_LEVEL
       value: "debug"
+    - name: CONVERTER_URL
+      valueFrom:
+        secretKeyRef:
+          name: ecct-roman-num-calc
+          key: CONVERTER_URL
 
   envFrom:
     - configMapRef:
