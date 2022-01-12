@@ -27,7 +27,6 @@
     "start": "npm run serve",
     "serve": "node dist/src",
     "start:dev": "ts-node src | pino-pretty",
-    "pact:verify": "ts-node test/pact-verify",
     "pact:publish": "ts-node test/pact-publish",
     "sonarqube:scan": "npm run test && ts-node test/sonarqube-scan"
   },
