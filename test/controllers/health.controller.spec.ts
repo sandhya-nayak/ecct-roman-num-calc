@@ -1,10 +1,9 @@
-import {Application} from 'express';
-import {default as request} from 'supertest';
+import { Application } from 'express';
+import { default as request } from 'supertest';
 
-import {buildApiServer} from '../helper';
+import { buildApiServer } from '../helper';
 
 describe('health.controller', () => {
-
   let app: Application;
 
   beforeEach(() => {
@@ -18,13 +17,13 @@ describe('health.controller', () => {
   });
 
   describe('Given /health', () => {
-    test('should return 200 status', () => {
-      return request(app).get('/health').expect(200);
-    });
-
-    test('should return {status: "UP:}', () => {
-      return request(app).get('/health').expect({status: 'UP'});
+    test('should return 200 status', async () => {
+      await request(app)
+        .get('/health')
+        .expect(200)
+        .then((r) => {
+          expect(r.body).toStrictEqual({ status: 'UP' });
+        });
     });
   });
-
 });

@@ -1,15 +1,13 @@
-import {Container} from 'typescript-ioc';
-import {ConverterService} from '../../src/services';
-import {BadRequestError, InternalServerError} from 'typescript-rest/dist/server/model/errors';
+import { Container } from 'typescript-ioc';
+import { ConverterService } from '../../src/services';
 import path from 'path';
 import { Pact } from '@pact-foundation/pact';
 
-describe('Converter service', () =>{
-
+describe('Converter service', () => {
   let service: ConverterService;
   let mockProvider: Pact;
 
-  beforeAll(async() => {
+  beforeAll(async () => {
     service = Container.get(ConverterService);
 
     mockProvider = new Pact({
@@ -17,7 +15,7 @@ describe('Converter service', () =>{
       log: path.resolve(process.cwd(), 'logs', 'pact.log'),
       dir: path.resolve(process.cwd(), 'pacts'),
       consumer: 'ecct-roman-num-calc',
-      provider: 'ecct-roman-num-conv'
+      provider: 'ecct-roman-num-conv',
     });
 
     await mockProvider.setup();
@@ -29,12 +27,12 @@ describe('Converter service', () =>{
         withRequest: {
           method: 'GET',
           path: '/to-roman',
-          query: 'value=0'
+          query: 'value=0',
         },
         willRespondWith: {
           status: 200,
           body: 'nulla',
-        }
+        },
       }),
 
       mockProvider.addInteraction({
@@ -43,12 +41,12 @@ describe('Converter service', () =>{
         withRequest: {
           method: 'GET',
           path: '/to-roman',
-          query: 'value=579'
+          query: 'value=579',
         },
         willRespondWith: {
           status: 200,
           body: 'DLXXIX',
-        }
+        },
       }),
 
       mockProvider.addInteraction({
@@ -57,21 +55,21 @@ describe('Converter service', () =>{
         withRequest: {
           method: 'GET',
           path: '/to-roman',
-          query: 'value=3999'
+          query: 'value=3999',
         },
         willRespondWith: {
           status: 200,
           body: 'MMMCMXCIX',
-        }
-      })
+        },
+      }),
     ]);
   }, 30000);
 
-  afterEach(async() => {
+  afterEach(async () => {
     jest.clearAllMocks();
   });
 
-  afterAll(async() => {
+  afterAll(async () => {
     await mockProvider.verify().finally(async () => {
       await mockProvider.finalize();
     });
@@ -82,24 +80,26 @@ describe('Converter service', () =>{
   });
 
   describe('the service should handle positive integers between 0 and 3999 inclusive', () => {
-
     describe('a to-roman call with input 0', () => {
-      let input = 0, output = "nulla";
-      it('should return nulla',async() => {
+      const input = 0,
+        output = 'nulla';
+      it('should return nulla', async () => {
         expect(await service.toRoman(input)).toEqual(output);
       });
     });
 
     describe('a to-roman call with input 579', () => {
-      let input = 579, output = "DLXXIX";
-      it('should return DLXXIX',async() => {
+      const input = 579,
+        output = 'DLXXIX';
+      it('should return DLXXIX', async () => {
         expect(await service.toRoman(input)).toEqual(output);
       });
     });
 
     describe('a to-roman call with input 3999', () => {
-      let input = 3999, output = "MMMCMXCIX";
-      it('should return MMMCMXCIX',async() => {
+      const input = 3999,
+        output = 'MMMCMXCIX';
+      it('should return MMMCMXCIX', async () => {
         expect(await service.toRoman(input)).toEqual(output);
       });
     });
